@@ -21,10 +21,17 @@ p = zeros(size(X, 1), 1);
 %       can use max(A, [], 2) to obtain the max for each row.
 %
 
+X = [ones(m, 1) X]; % 5000 x 401
+z2 = Theta1 * X'; % 25 x 401 X 401 x 5000
+a2 = sigmoid(z2); % 25 x 5000 
+a2 = a2'; % 5000 x 25
 
+a2 = [ones(m, 1) a2]; % 5000 x 26
+z3 = Theta2 * a2'; % 10 x 26 X 26 x 5000
+h = sigmoid(z3); % 10 x 5000
+h = h'; % 5000 x 10
 
-
-
+[possibility, p] = max(h, [], 2); % max in every row 5000x1 (value, index)
 
 
 

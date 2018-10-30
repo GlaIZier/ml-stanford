@@ -30,10 +30,9 @@ X = [ones(m, 1) X];
 %       for each row.
 %       
 
-
-
-
-
+all_z = X * all_theta'; % 5000 x 401 X 401 x 10 => 5000 X 10
+all_p = sigmoid(all_z); %5000x10
+[possibility, p] = max(all_p, [], 2); % max in every row 5000x1 (value, index)
 
 
 % =========================================================================
