@@ -67,7 +67,9 @@ Theta2_grad = zeros(size(Theta2));
 % Feedforward
 
 X = [ones(m, 1) X]; % m x 401
-z2 = Theta1 * X'; % 25 x 401 X 401 x m
+a1 = X;
+
+z2 = Theta1 * a1'; % 25 x 401 X 401 x m
 a2 = sigmoid(z2); % 25 x m 
 a2 = a2'; % m x 25
 
@@ -75,6 +77,7 @@ a2 = [ones(m, 1) a2]; % m x 26
 z3 = Theta2 * a2'; % num_labels(= 10) x 26 X 26 x m
 h = sigmoid(z3); % num_labels x m
 h = h'; % m x num_labels
+a3 = h;
 
 % y -> zero-one matrix (the same as h)
 y_matrix = zeros(size(y, 1), num_labels); % m x num_labels(= 10)
@@ -82,7 +85,7 @@ for i=1:num_labels
   y_matrix(:, i) = (y == i);
 end
 
-%J 
+% J 
 minuendLog = log(h); % m x num_labels
 minuend = y_matrix .* minuendLog; % m x num_labels
 subtrahendLog = log(1 - h);
@@ -93,16 +96,41 @@ diff = -minuend - subtrahend; % m x 10
 % m is i (rows) and num_labels is K (columns) in the cost formula
 J = (1 / m) * sum(diff(:)); 
 
+% Regularization
+Theta1_unbiasied = Theta1(:, 2 : size(Theta1, 2)); 
+Theta2_unbiasied = Theta2(:, 2 : size(Theta2, 2));
+Theta1_unbiasied_sqr = Theta1_unbiasied .^ 2;
+Theta2_unbiasied_sqr = Theta2_unbiasied .^ 2;
+
+regularization = (lambda / (2 * m)) * (sum(Theta1_unbiasied_sqr(:)) + sum(Theta2_unbiasied_sqr(:))); % vectorize Thetas to sum for all dims
+
+J = J + regularization;
 
 
 
+% -- Part 2
+% Backpropagation
 
-
-
-
-
-
-
+for t = 1: m 
+  % 1 feedprop. Already done
+  
+  % 2
+  a3t = (a3(t, :))'; % num_labels x 1
+  yt = (y_matrix(t, :))'; % num_labels x 1
+  delta3 = a3t - yt; % num_labels x 1
+  
+  %3
+  z2t = z2(:, t); % 25 x 1
+  % remove after testing
+  % sg = sigmoidGradient(z2t);
+  % sg = [1; sg]; % 26 x 1
+  a2t = (a2(t, :))'; % m x 26 -> 26 x 1
+  sg = a2 .* (1 - a2)   % 26 x 1
+  multiplier = Theta2' * delta3; % 26 x num_labels X num_labels x 1 = 26 x 1
+  delta2 = multiplier .* sg;
+  
+  
+end
 
 
 
