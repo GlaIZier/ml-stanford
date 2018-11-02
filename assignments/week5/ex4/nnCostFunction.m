@@ -74,14 +74,14 @@ a2 = sigmoid(z2); % 25 x m
 a2 = a2'; % m x 25
 
 a2 = [ones(m, 1) a2]; % m x 26
-z3 = Theta2 * a2'; % num_labels(= 10) x 26 X 26 x m
+z3 = Theta2 * a2'; % num_labels(= 10) x 26 X 26 x m = num_labels x m
 h = sigmoid(z3); % num_labels x m
 h = h'; % m x num_labels
 a3 = h;
 
 % y -> zero-one matrix (the same as h)
 y_matrix = zeros(size(y, 1), num_labels); % m x num_labels(= 10)
-for i=1:num_labels
+for i = 1 : num_labels
   y_matrix(:, i) = (y == i);
 end
 
@@ -111,6 +111,8 @@ J = J + regularization;
 % -- Part 2
 % Backpropagation
 
+D1 = zeros(size(Theta1_grad));
+D2 = zeros(size(Theta2_grad));
 for t = 1: m 
   % 1 feedprop. Already done
   
@@ -119,20 +121,31 @@ for t = 1: m
   yt = (y_matrix(t, :))'; % num_labels x 1
   delta3 = a3t - yt; % num_labels x 1
   
-  %3
-  z2t = z2(:, t); % 25 x 1
-  % remove after testing
-  % sg = sigmoidGradient(z2t);
-  % sg = [1; sg]; % 26 x 1
+  % 3
   a2t = (a2(t, :))'; % m x 26 -> 26 x 1
-  sg = a2 .* (1 - a2)   % 26 x 1
+  sg = a2t .* (1 - a2t);   % 26 x 1
   multiplier = Theta2' * delta3; % 26 x num_labels X num_labels x 1 = 26 x 1
-  delta2 = multiplier .* sg;
+  delta2 = multiplier .* sg; % 26 x 1
+  delta2 = delta2(2 : end); % 25 x 1. Exclude biased delta
   
+  % 4
+  a1t = (a1(t, :))'; % m x 401 -> 401 x 1
+  D2 = D2 + delta3 * a2t'; % num_labels x 1 X 1 x 26 = num_labels x 26
+  D1 = D1 + delta2 * a1t'; % 25 x 1 X 1 x 401 = 25 x 401
   
 end
+% 5
+Theta1_grad = (1 / m) * D1;
+Theta2_grad = (1 / m) * D2;
 
+% gradient regularization
+Theta1_grad_bias = Theta1_grad(:, 1); % save first (unbiased) column (j = 0)
+Theta1_grad = Theta1_grad + (lambda / m) * Theta1;
+Theta1_grad(:, 1) = Theta1_grad_bias;
 
+Theta2_grad_bias = Theta2_grad(:, 1); % save first (unbiased) column (j = 0)
+Theta2_grad = Theta2_grad + (lambda / m) * Theta2;
+Theta2_grad(:, 1) = Theta2_grad_bias;
 
 
 % -------------------------------------------------------------
