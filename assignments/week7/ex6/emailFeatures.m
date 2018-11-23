@@ -48,7 +48,9 @@ x = zeros(n, 1);
 %
 %
 
-
+for word_index = 1 : length(word_indices)
+  x(word_indices(word_index)) = 1;
+end
 
 
 
